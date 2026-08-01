@@ -1,6 +1,7 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Leaf } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Leaf, User } from "lucide-react-native";
 import { COLORS, SPACING, RADIUS } from "../theme";
 
 export function Card({ children, style }) {
@@ -100,6 +101,51 @@ const sb = StyleSheet.create({
   navLabel: { fontSize: 13.5, fontWeight: "500", color: "#CBBED3" },
   signOut: { padding: 12, borderTopWidth: 1, borderTopColor: COLORS.brandLight, marginTop: 8 },
   signOutText: { fontSize: 12, color: "#B6A9C0" },
+});
+
+export function AppHeader({ email, onSignOut, dark }) {
+  const insets = useSafeAreaInsets();
+  const bg = dark ? COLORS.brand : COLORS.bg;
+  const textColor = dark ? "#F6F2F8" : COLORS.brand;
+
+  const openMenu = () => {
+    Alert.alert(email || "Account", "Signed in to Ojas Bloom Studio Manager", [
+      { text: "Sign out", style: "destructive", onPress: onSignOut },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  return (
+    <View
+      style={[
+        hd.wrap,
+        { backgroundColor: bg, borderBottomColor: dark ? COLORS.brandLight : COLORS.border, paddingTop: insets.top + 10 },
+      ]}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View style={hd.logoMark}>
+          <Leaf size={15} color="#fff" />
+        </View>
+        <Text style={{ fontSize: 15, fontWeight: "700", color: textColor }}>Ojas Bloom</Text>
+      </View>
+      <TouchableOpacity onPress={openMenu} style={[hd.avatar, { borderColor: dark ? "#fff" : COLORS.brand }]}>
+        <User size={16} color={dark ? "#fff" : COLORS.brand} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const hd = StyleSheet.create({
+  wrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+  },
+  logoMark: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLORS.gold, alignItems: "center", justifyContent: "center" },
+  avatar: { width: 32, height: 32, borderRadius: 16, borderWidth: 1.5, alignItems: "center", justifyContent: "center" },
 });
 
 export function KPI({ label, value, sub, color = COLORS.brand, onPress }) {
