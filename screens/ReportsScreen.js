@@ -109,16 +109,34 @@ export default function ReportsScreen() {
             <Empty text="No data yet for the last 6 months." />
           ) : (
             <>
-              <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 140, marginBottom: 8 }}>
-                {trend.map((t) => (
-                  <View key={t.key} style={{ alignItems: "center", flex: 1 }}>
-                    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 3, height: 120 }}>
-                      <View style={{ width: 10, height: Math.max(2, (t.income / trendMax) * 120), backgroundColor: COLORS.brand, borderRadius: 3 }} />
-                      <View style={{ width: 10, height: Math.max(2, (t.expense / trendMax) * 120), backgroundColor: COLORS.gold, borderRadius: 3 }} />
+              <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 160, marginBottom: 8 }}>
+                {trend.map((t) => {
+                  const incH = Math.max(2, (t.income / trendMax) * 120);
+                  const expH = Math.max(2, (t.expense / trendMax) * 120);
+                  return (
+                    <View key={t.key} style={{ alignItems: "center", flex: 1 }}>
+                      <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 3, height: 120 }}>
+                        <View style={{ alignItems: "center" }}>
+                          {t.income > 0 && (
+                            <Text style={{ fontSize: 8, color: COLORS.brand, fontWeight: "700", marginBottom: 2 }}>
+                              {Math.round(t.income / 1000)}k
+                            </Text>
+                          )}
+                          <View style={{ width: 11, height: incH, backgroundColor: COLORS.brand, borderRadius: 3 }} />
+                        </View>
+                        <View style={{ alignItems: "center" }}>
+                          {t.expense > 0 && (
+                            <Text style={{ fontSize: 8, color: COLORS.goldDark, fontWeight: "700", marginBottom: 2 }}>
+                              {Math.round(t.expense / 1000)}k
+                            </Text>
+                          )}
+                          <View style={{ width: 11, height: expH, backgroundColor: COLORS.gold, borderRadius: 3 }} />
+                        </View>
+                      </View>
+                      <Text style={{ fontSize: 10, color: COLORS.muted, marginTop: 6 }}>{monthLabel(t.key)}</Text>
                     </View>
-                    <Text style={{ fontSize: 10, color: COLORS.muted, marginTop: 6 }}>{monthLabel(t.key)}</Text>
-                  </View>
-                ))}
+                  );
+                })}
               </View>
               <View style={{ flexDirection: "row", gap: 16, justifyContent: "center", marginTop: 4 }}>
                 <Legend color={COLORS.brand} label="Income" />

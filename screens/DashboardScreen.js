@@ -1,14 +1,15 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Modal, FlatList, TouchableOpacity, Linking, ActivityIndicator } from "react-native";
-import { Check, Copy, X, Bell, Leaf } from "lucide-react-native";
+import { Check, Copy, X, Bell, Leaf, TrendingUp } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
-import { COLORS } from "../theme";
-import { Card, CardHead, Button, Empty, KPI, Badge } from "../components/UI";
-import { todayISO, monthKeyOf, fmtMoney, fmtDate, monthLabel, isExpensePaid, expensePaidDate, isExpenseOverdue } from "../lib/helpers";
+import { COLORS, RADIUS, SHADOW } from "../theme";
+import { Card, CardHead, Button, Empty, KPI, Badge, useToast, Toast } from "../components/UI";
+import { todayISO, monthKeyOf, fmtMoney, fmtDate, monthLabel, isExpensePaid, expensePaidDate, isExpenseOverdue, greetingFor } from "../lib/helpers";
 
 export default function DashboardScreen() {
   const { students, payments, expenses, loading, markPaid, markExpensePaid } = useStudioData();
   const [modal, setModal] = useState(null);
+  const { toast, show: showToast } = useToast();
 
   const thisMonthKey = monthKeyOf(todayISO());
   const overdue = useMemo(
@@ -55,7 +56,23 @@ export default function DashboardScreen() {
   }
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView style={s.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+
+      {/* Greeting banner */}
+      <View style={[s.greetCard, SHADOW.sm]}>
+        <View style={s.greetIcon}>
+          <Leaf size={18} color={COLORS.gold} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={s.greetTitle}>{greetingFor()} 🙏</Text>
+          <Text style={s.greetSub}>
+            {students.length} student{students.length !== 1 ? "s" : ""} enrolled
+            {overdue.length > 0 ? ` · ${overdue.length} overdue` : " · all fees up to date"}
+          </Text>
+        </View>
+      </View>
+
       <View style={s.kpiGrid}>
         <KPI label="Income this month" value={fmtMoney(incomeThisMonth)} onPress={() => setModal("income")} />
         <KPI label="Expenses this month" value={fmtMoney(expenseThisMonth)} color={COLORS.goldDark} onPress={() => setModal("expense")} />
@@ -89,7 +106,7 @@ export default function DashboardScreen() {
                 <TouchableOpacity onPress={() => remindViaWhatsApp(st)} style={s.iconBtn}>
                   <Copy size={15} color={COLORS.brand} />
                 </TouchableOpacity>
-                <Button onPress={() => markPaid(st)} style={{ paddingVertical: 7, paddingHorizontal: 10 }}>
+                <Button onPress={() => { markPaid(st); showToast(`${st.name} marked paid`); }} style={{ paddingVertical: 7, paddingHorizontal: 10 }}>
                   Paid
                 </Button>
               </View>
@@ -202,6 +219,8 @@ export default function DashboardScreen() {
         }
       />
     </ScrollView>
+    <Toast visible={toast.visible} message={toast.message} type={toast.type} />
+    </View>
   );
 }
 
@@ -244,4 +263,23 @@ const s = StyleSheet.create({
   modalCard: { backgroundColor: COLORS.surface, borderTopLeftRadius: 18, borderTopRightRadius: 18, maxHeight: "80%" },
   modalHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   modalTitle: { fontSize: 16, fontWeight: "700", color: COLORS.brand, marginTop: 2 },
+  greetCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: COLORS.brand,
+    borderRadius: 14,
+    padding: 16,
+    marginBottom: 14,
+  },
+  greetIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.brandLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  greetTitle: { fontSize: 16, fontWeight: "700", color: "#F6F2F8" },
+  greetSub: { fontSize: 12, color: "#B6A9C0", marginTop: 2 },
 });

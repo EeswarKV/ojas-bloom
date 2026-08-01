@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator
 import { Repeat, Trash2 } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS } from "../theme";
-import { Card, CardHead, Button, Field, InputBox, Empty } from "../components/UI";
+import { Card, CardHead, Button, Field, InputBox, Empty, Toggle, useToast, Toast } from "../components/UI";
 import { todayISO, fmtMoney, fmtDate, expensePaidDate, isExpensePaid, CATEGORIES, RECURRING_BY_DEFAULT } from "../lib/helpers";
 
 export default function ExpensesScreen() {
@@ -12,6 +12,7 @@ export default function ExpensesScreen() {
   const [status, setStatus] = useState("paid");
   const [recurrence, setRecurrence] = useState("one-time");
   const [form, setForm] = useState({ category: "Rent", amount: "", date: todayISO(), due_date: todayISO(), note: "" });
+  const { toast, show: showToast } = useToast();
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const onCategoryChange = (cat) => {
@@ -27,6 +28,7 @@ export default function ExpensesScreen() {
     }
     setForm({ category: "Rent", amount: "", date: todayISO(), due_date: todayISO(), note: "" });
     setShowAdd(false);
+    showToast(status === "paid" ? "Expense saved" : "Bill added");
   };
 
   const pendingBills = expenses.filter((e) => e.status === "pending").sort((a, b) => a.due_date.localeCompare(b.due_date));
@@ -38,6 +40,7 @@ export default function ExpensesScreen() {
   if (loading) return <View style={s.center}><ActivityIndicator color={COLORS.brand} /></View>;
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView style={s.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
       <Button onPress={() => setShowAdd((v) => !v)} style={{ marginBottom: 14, alignSelf: "flex-start", paddingHorizontal: 16 }}>
         {showAdd ? "Close" : "+ Add expense"}
@@ -143,24 +146,9 @@ export default function ExpensesScreen() {
         )}
       </Card>
     </ScrollView>
+    <Toast visible={toast.visible} message={toast.message} type={toast.type} />
   );
 }
-
-function Toggle({ active, onPress, label, small }) {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[st.toggle, active && st.toggleActive, small && { paddingVertical: 6, paddingHorizontal: 10 }]}
-    >
-      <Text style={{ color: active ? "#fff" : COLORS.text2, fontWeight: "600", fontSize: small ? 12 : 13 }}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
-
-const st = StyleSheet.create({
-  toggle: { paddingVertical: 8, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border, backgroundColor: "#FDFDFC" },
-  toggleActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
-});
 
 const s = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: COLORS.bg },
