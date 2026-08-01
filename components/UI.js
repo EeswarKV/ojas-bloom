@@ -1,7 +1,8 @@
-import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
-import { Leaf } from "lucide-react-native";
-import { COLORS, SPACING, RADIUS } from "../theme";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated } from "react-native";
+import { Leaf, Search } from "lucide-react-native";
+import { COLORS, SPACING, RADIUS, SHADOW } from "../theme";
+import { initials, avatarColor } from "../lib/helpers";
 
 export function Card({ children, style }) {
   return <View style={[s.card, style]}>{children}</View>;
@@ -21,8 +22,20 @@ export function CardHead({ eyebrow, title, right }) {
 
 export function Button({ children, onPress, variant = "primary", style }) {
   return (
-    <TouchableOpacity onPress={onPress} style={[s.btn, s[`btn_${variant}`], style]}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.75} style={[s.btn, s[`btn_${variant}`], style]}>
       <Text style={s[`btnText_${variant}`]}>{children}</Text>
+    </TouchableOpacity>
+  );
+}
+
+export function Toggle({ active, onPress, label, small }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={[s.toggle, active && s.toggleActive, small && { paddingVertical: 6, paddingHorizontal: 10 }]}
+    >
+      <Text style={{ color: active ? "#fff" : COLORS.text2, fontWeight: "600", fontSize: small ? 12 : 13 }}>{label}</Text>
     </TouchableOpacity>
   );
 }
@@ -40,6 +53,39 @@ export function InputBox(props) {
   return <TextInput {...props} style={[s.input, props.style]} placeholderTextColor={COLORS.muted} />;
 }
 
+export function SearchBar({ value, onChangeText, placeholder = "Search…" }) {
+  return (
+    <View style={s.searchWrap}>
+      <Search size={15} color={COLORS.muted} />
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.muted}
+        style={s.searchInput}
+        autoCapitalize="none"
+        autoCorrect={false}
+        clearButtonMode="while-editing"
+      />
+      {value.length > 0 && (
+        <TouchableOpacity onPress={() => onChangeText("")} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Text style={{ color: COLORS.muted, fontSize: 16, lineHeight: 18 }}>×</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+export function Avatar({ name, size = 38 }) {
+  const bg = avatarColor(name);
+  const text = initials(name);
+  return (
+    <View style={[s.avatar, { width: size, height: size, borderRadius: size / 2, backgroundColor: bg }]}>
+      <Text style={{ color: "#fff", fontWeight: "700", fontSize: Math.round(size * 0.38) }}>{text}</Text>
+    </View>
+  );
+}
+
 export function Badge({ ok, children }) {
   return (
     <View style={[s.badge, { backgroundColor: ok ? COLORS.brandTint : COLORS.redTint }]}>
@@ -53,6 +99,46 @@ export function Empty({ text }) {
     <View style={{ padding: 28, alignItems: "center" }}>
       <Text style={{ color: COLORS.muted, fontSize: 13.5, textAlign: "center" }}>{text}</Text>
     </View>
+  );
+}
+
+// ---- Toast ----
+export function useToast() {
+  const [toast, setToast] = useState({ visible: false, message: "", type: "success", _key: 0 });
+  const show = (message, type = "success") =>
+    setToast((t) => ({ visible: true, message, type, _key: t._key + 1 }));
+  return { toast, show };
+}
+
+export function Toast({ visible, message, type = "success" }) {
+  const anim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!visible) return;
+    anim.setValue(0);
+    Animated.sequence([
+      Animated.timing(anim, { toValue: 1, duration: 280, useNativeDriver: true }),
+      Animated.delay(2000),
+      Animated.timing(anim, { toValue: 0, duration: 280, useNativeDriver: true }),
+    ]).start();
+  }, [visible, message]);
+
+  const bg = type === "error" ? COLORS.red : type === "warning" ? COLORS.goldDark : COLORS.green;
+
+  return (
+    <Animated.View
+      pointerEvents="none"
+      style={[
+        s.toast,
+        {
+          backgroundColor: bg,
+          opacity: anim,
+          transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] }) }],
+        },
+      ]}
+    >
+      <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13.5 }}>{message}</Text>
+    </Animated.View>
   );
 }
 
@@ -104,7 +190,7 @@ const sb = StyleSheet.create({
 
 export function KPI({ label, value, sub, color = COLORS.brand, onPress }) {
   return (
-    <TouchableOpacity activeOpacity={onPress ? 0.7 : 1} onPress={onPress} style={[s.card, s.kpi]}>
+    <TouchableOpacity activeOpacity={onPress ? 0.7 : 1} onPress={onPress} style={[s.card, s.kpi, SHADOW.sm]}>
       <Text style={s.kpiLabel}>{label}</Text>
       <Text style={[s.kpiValue, { color }]}>{value}</Text>
       {sub ? <Text style={s.kpiSub}>{sub}</Text> : null}
@@ -149,15 +235,58 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: RADIUS.sm,
-    paddingVertical: 9,
-    paddingHorizontal: 11,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     fontSize: 14,
     color: COLORS.ink,
     backgroundColor: "#FDFDFC",
   },
+  toggle: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: "#FDFDFC",
+  },
+  toggleActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   badge: { alignSelf: "flex-start", paddingVertical: 3, paddingHorizontal: 9, borderRadius: RADIUS.pill },
   kpi: { flexBasis: "48%", padding: 16 },
   kpiLabel: { fontSize: 12, color: COLORS.muted, fontWeight: "500" },
   kpiValue: { fontSize: 22, fontWeight: "700", marginTop: 4 },
   kpiSub: { fontSize: 11.5, color: COLORS.muted, marginTop: 4 },
+  searchWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 9,
+    paddingHorizontal: 11,
+    backgroundColor: "#FDFDFC",
+    marginBottom: 12,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.ink,
+  },
+  avatar: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  toast: {
+    position: "absolute",
+    top: 12,
+    left: 16,
+    right: 16,
+    borderRadius: RADIUS.md,
+    paddingVertical: 13,
+    paddingHorizontal: 18,
+    zIndex: 9999,
+    alignItems: "center",
+    ...SHADOW.md,
+  },
 });
+
