@@ -147,6 +147,7 @@ export default function ExpensesScreen() {
       </Card>
     </ScrollView>
     <Toast visible={toast.visible} message={toast.message} type={toast.type} />
+    </View>
   );
 }
 
