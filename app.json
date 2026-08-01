@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Ojas Bloom Studio",
+    "slug": "ojas-bloom-studio",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAF8F6",
+    "splash": {
+      "backgroundColor": "#251A2E"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ojasbloom.studio"
+    },
+    "android": {
+      "package": "com.ojasbloom.studio",
+      "adaptiveIcon": {
+        "backgroundColor": "#251A2E"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
