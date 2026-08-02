@@ -101,6 +101,7 @@ export default function DashboardScreen() {
       </Card>
 
       {/* This month KPIs */}
+      <View style={s.kpiGrid}>
         <KPI label="Income this month" value={fmtMoney(incomeThisMonth)} onPress={() => setModal("income")} />
         <KPI label="Expenses this month" value={fmtMoney(expenseThisMonth)} color={COLORS.goldDark} onPress={() => setModal("expense")} />
         <KPI
