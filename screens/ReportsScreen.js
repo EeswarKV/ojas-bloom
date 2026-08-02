@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, useWindowDimensions } from "react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS } from "../theme";
 import { Card, CardHead, Empty } from "../components/UI";
@@ -19,6 +19,8 @@ export default function ReportsScreen() {
   const [period, setPeriod] = useState("Monthly");
   const [selectedKey, setSelectedKey] = useState(monthKeyOf(todayISO()));
   const [finTab, setFinTab] = useState("Income Statement");
+  const { width } = useWindowDimensions();
+  const isWide = Platform.OS === "web" && width >= 700;
 
   // Auto-jump to the most recent month that actually has data
   useEffect(() => {
@@ -155,37 +157,56 @@ export default function ReportsScreen() {
       </Card>
 
       <Card style={{ marginTop: 14 }}>
-        <CardHead eyebrow={`Last ${trendMonths.length} months from first entry`} title="Income vs expenses trend" />
+        <CardHead eyebrow={`${trendMonths.length} months from first entry`} title="Revenue vs Expenses trend" />
         <View style={{ padding: 16 }}>
           {!hasTrendData ? (
             <Empty text="No data yet to plot." />
           ) : (
             <>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                <View style={{ flexDirection: "row", alignItems: "flex-end", height: 160, gap: 6 }}>
+              {/* Full-width responsive bar chart */}
+              <View>
+                {/* Bars row */}
+                <View style={{ flexDirection: "row", alignItems: "flex-end", height: isWide ? 260 : 180, borderBottomWidth: 2, borderBottomColor: COLORS.border }}>
                   {trend.map((t) => {
-                    const incH = Math.max(2, (t.income / trendMax) * 120);
-                    const expH = Math.max(2, (t.expense / trendMax) * 120);
+                    const BAR_H = isWide ? 200 : 140;
+                    const incH = Math.max(2, (t.income / trendMax) * BAR_H);
+                    const expH = Math.max(2, (t.expense / trendMax) * BAR_H);
                     return (
-                      <View key={t.key} style={{ alignItems: "center", width: 38 }}>
-                        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 3, height: 130 }}>
-                          <View style={{ alignItems: "center" }}>
-                            {t.income > 0 && <Text style={{ fontSize: 7, color: COLORS.brand, fontWeight: "700", marginBottom: 1 }}>{Math.round(t.income / 1000)}k</Text>}
-                            <View style={{ width: 12, height: incH, backgroundColor: COLORS.brand, borderRadius: 3 }} />
-                          </View>
-                          <View style={{ alignItems: "center" }}>
-                            {t.expense > 0 && <Text style={{ fontSize: 7, color: COLORS.goldDark, fontWeight: "700", marginBottom: 1 }}>{Math.round(t.expense / 1000)}k</Text>}
-                            <View style={{ width: 12, height: expH, backgroundColor: COLORS.gold, borderRadius: 3 }} />
-                          </View>
+                      <View key={t.key} style={{ flex: 1, flexDirection: "row", alignItems: "flex-end", justifyContent: "center", gap: isWide ? 4 : 2, paddingHorizontal: isWide ? 6 : 2 }}>
+                        {/* Revenue bar */}
+                        <View style={{ flex: 1, maxWidth: isWide ? 32 : 16, alignItems: "center", justifyContent: "flex-end" }}>
+                          {t.income > 0 && (
+                            <Text style={{ fontSize: isWide ? 10 : 7, color: COLORS.brand, fontWeight: "700", marginBottom: 3, textAlign: "center" }}>
+                              {t.income >= 1000 ? Math.round(t.income / 1000) + "k" : t.income}
+                            </Text>
+                          )}
+                          <View style={{ width: "100%", height: incH, backgroundColor: COLORS.brand, borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
                         </View>
-                        <Text style={{ fontSize: 9, color: COLORS.muted, marginTop: 5, textAlign: "center" }}>{monthLabel(t.key)}</Text>
+                        {/* Expenses bar */}
+                        <View style={{ flex: 1, maxWidth: isWide ? 32 : 16, alignItems: "center", justifyContent: "flex-end" }}>
+                          {t.expense > 0 && (
+                            <Text style={{ fontSize: isWide ? 10 : 7, color: COLORS.goldDark, fontWeight: "700", marginBottom: 3, textAlign: "center" }}>
+                              {t.expense >= 1000 ? Math.round(t.expense / 1000) + "k" : t.expense}
+                            </Text>
+                          )}
+                          <View style={{ width: "100%", height: expH, backgroundColor: COLORS.gold, borderTopLeftRadius: 4, borderTopRightRadius: 4 }} />
+                        </View>
                       </View>
                     );
                   })}
                 </View>
-              </ScrollView>
-              <View style={{ flexDirection: "row", gap: 16, justifyContent: "center", marginTop: 10 }}>
-                <Legend color={COLORS.brand} label="Income" />
+                {/* Month labels */}
+                <View style={{ flexDirection: "row", marginTop: 8 }}>
+                  {trend.map((t) => (
+                    <View key={t.key} style={{ flex: 1, alignItems: "center" }}>
+                      <Text style={{ fontSize: isWide ? 12 : 9, color: COLORS.text2, textAlign: "center" }}>{monthLabel(t.key)}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+              {/* Legend */}
+              <View style={{ flexDirection: "row", gap: 20, justifyContent: "center", marginTop: 16 }}>
+                <Legend color={COLORS.brand} label="Revenue" />
                 <Legend color={COLORS.gold} label="Expenses" />
               </View>
             </>
@@ -207,8 +228,8 @@ export default function ReportsScreen() {
                     <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.ink }}>{c.name}</Text>
                     <Text style={{ fontSize: 13, color: COLORS.text2 }}>{fmtMoney(c.value)} · {Math.round(pct * 100)}%</Text>
                   </View>
-                  <View style={{ height: 8, borderRadius: 4, backgroundColor: COLORS.border, overflow: "hidden" }}>
-                    <View style={{ width: `${Math.max(3, pct * 100)}%`, height: 8, backgroundColor: PALETTE[i % PALETTE.length], borderRadius: 4 }} />
+                  <View style={{ height: 10, borderRadius: 5, backgroundColor: COLORS.border, overflow: "hidden" }}>
+                    <View style={{ width: `${Math.max(3, pct * 100)}%`, height: 10, backgroundColor: PALETTE[i % PALETTE.length], borderRadius: 5 }} />
                   </View>
                 </View>
               );
