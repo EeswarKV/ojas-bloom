@@ -95,24 +95,21 @@ function WideLayout({ email }) {
 }
 
 const wl = StyleSheet.create({
-  shell: { flex: 1, flexDirection: "row", backgroundColor: COLORS.bg },
-  body: { flex: 1, backgroundColor: COLORS.bg },
+  shell: { flex: 1, flexDirection: "row", backgroundColor: "#F1EDF6" },
+  body: { flex: 1, backgroundColor: "#F1EDF6" },
   pageHeader: {
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    backgroundColor: COLORS.brand,
+    paddingHorizontal: 32,
+    paddingTop: 20,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
-  headerInner: {
-    maxWidth: 900,
-    width: "100%",
-    alignSelf: "center",
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 18,
-  },
-  pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.goldDark, textTransform: "uppercase" },
-  pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.brand, marginTop: 3, letterSpacing: -0.3 },
-  content: { flex: 1, maxWidth: 900, width: "100%", alignSelf: "center" },
+  headerInner: { flex: 1 },
+  pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.gold, textTransform: "uppercase" },
+  pageTitle: { fontSize: 22, fontWeight: "700", color: "#F6F2F8", marginTop: 2, letterSpacing: -0.3 },
+  content: { flex: 1, paddingHorizontal: 28, paddingTop: 4 },
 });
 
 // ---- phones: branded plum header + branded bottom tab bar ----

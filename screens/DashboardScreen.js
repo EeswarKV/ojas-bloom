@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Linking, ActivityIndicator, Platform } from "react-native";
+import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Linking, ActivityIndicator, Platform, useWindowDimensions } from "react-native";
 import { Copy, X, Bell, Leaf, TrendingDown, TrendingUp, Wallet, ChevronRight } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS, SHADOW } from "../theme";
@@ -10,6 +10,8 @@ export default function DashboardScreen({ onNavigate }) {
   const { students, payments, expenses, loading, markPaid, markExpensePaid } = useStudioData();
   const [modal, setModal] = useState(null);
   const { toast, show: showToast } = useToast();
+  const { width } = useWindowDimensions();
+  const isWide = Platform.OS === "web" && width >= 880;
 
   const thisMonthKey = monthKeyOf(todayISO());
   const overdue = useMemo(
@@ -123,45 +125,53 @@ export default function DashboardScreen({ onNavigate }) {
         />
       </View>
 
-      {/* Compact members tile */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={() => onNavigate?.("Students")}
-        style={[s.membersTile, SHADOW.sm]}
-      >
-        <View style={{ flex: 1 }}>
-          <Text style={s.membersTileEyebrow}>MEMBERS</Text>
-          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 4 }}>
-            <Text style={s.membersTileCount}>{students.length}</Text>
-            <Text style={{ fontSize: 13, color: COLORS.muted }}>enrolled</Text>
-          </View>
-          <View style={{ flexDirection: "row", gap: 14, marginTop: 8, flexWrap: "wrap" }}>
-            <View style={s.membersDot}>
-              <View style={[s.dot, { backgroundColor: COLORS.green }]} />
-              <Text style={s.membersLabel}>{paidCount} up to date</Text>
-            </View>
-            {overdue.length > 0 && (
-              <View style={s.membersDot}>
-                <View style={[s.dot, { backgroundColor: COLORS.red }]} />
-                <Text style={s.membersLabel}>{overdue.length} fee due</Text>
+      {/* Bottom section: 2-col on wide, 1-col on mobile */}
+      <View style={[{ marginTop: 14 }, isWide && { flexDirection: "row", gap: 14, alignItems: "flex-start" }]}>
+        {/* Left: members tile */}
+        <View style={isWide ? { flex: 1 } : {}}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => onNavigate?.("Students")}
+            style={[s.membersTile, SHADOW.sm]}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={s.membersTileEyebrow}>MEMBERS</Text>
+              <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 4 }}>
+                <Text style={s.membersTileCount}>{students.length}</Text>
+                <Text style={{ fontSize: 13, color: COLORS.muted }}>enrolled</Text>
               </View>
-            )}
-          </View>
-        </View>
-        <ChevronRight size={18} color={COLORS.muted} />
-      </TouchableOpacity>
-
-      <Card style={{ marginTop: 16 }}>
-        <CardHead eyebrow="Insights" title="Tips for you" />
-        <View style={{ padding: 16 }}>
-          {tips.map((t, i) => (
-            <View key={i} style={{ flexDirection: "row", gap: 8, marginBottom: i === tips.length - 1 ? 0 : 10 }}>
-              <Leaf size={14} color={COLORS.brand} style={{ marginTop: 2 }} />
-              <Text style={{ flex: 1, fontSize: 13.5, color: COLORS.ink, lineHeight: 19 }}>{t}</Text>
+              <View style={{ flexDirection: "row", gap: 14, marginTop: 8, flexWrap: "wrap" }}>
+                <View style={s.membersDot}>
+                  <View style={[s.dot, { backgroundColor: COLORS.green }]} />
+                  <Text style={s.membersLabel}>{paidCount} up to date</Text>
+                </View>
+                {overdue.length > 0 && (
+                  <View style={s.membersDot}>
+                    <View style={[s.dot, { backgroundColor: COLORS.red }]} />
+                    <Text style={s.membersLabel}>{overdue.length} fee due</Text>
+                  </View>
+                )}
+              </View>
             </View>
-          ))}
+            <ChevronRight size={18} color={COLORS.muted} />
+          </TouchableOpacity>
         </View>
-      </Card>
+
+        {/* Right: tips */}
+        <View style={isWide ? { flex: 1 } : { marginTop: 14 }}>
+          <Card>
+            <CardHead eyebrow="Insights" title="Tips for you" />
+            <View style={{ padding: 16 }}>
+              {tips.map((t, i) => (
+                <View key={i} style={{ flexDirection: "row", gap: 8, marginBottom: i === tips.length - 1 ? 0 : 10 }}>
+                  <Leaf size={14} color={COLORS.brand} style={{ marginTop: 2 }} />
+                  <Text style={{ flex: 1, fontSize: 13.5, color: COLORS.ink, lineHeight: 19 }}>{t}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
+        </View>
+      </View>
 
       <DrillModal
         visible={modal === "income"}
