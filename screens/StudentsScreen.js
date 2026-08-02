@@ -10,7 +10,7 @@ const EMPTY_FORM = { name: "", phone: "", type: "Offline", timing: "", fee: "", 
 const TYPES = ["All", "Offline", "Online", "Personal"];
 
 export default function StudentsScreen() {
-  const { students, loading, addStudent, deleteStudent, updateStudent, markPaid } = useStudioData();
+  const { students, loading, addStudent, deleteStudent, updateStudent, markPaid, unmarkPaid } = useStudioData();
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [search, setSearch] = useState("");
@@ -132,13 +132,13 @@ export default function StudentsScreen() {
                         Paid
                       </Button>
                     )}
-                    {isOverdue && (
+                    {!isOverdue && (
                       <Button
-                        onPress={() => remind(st)}
+                        onPress={() => { unmarkPaid(st); showToast("Payment reversed"); }}
                         variant="ghost"
                         style={{ paddingVertical: 7, paddingHorizontal: 10 }}
                       >
-                        Remind
+                        Undo paid
                       </Button>
                     )}
                   </View>
