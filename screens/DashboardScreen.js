@@ -1,12 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Linking, ActivityIndicator, Platform } from "react-native";
-import { Copy, X, Bell, Leaf, TrendingDown, TrendingUp, Wallet } from "lucide-react-native";
+import { Copy, X, Bell, Leaf, TrendingDown, TrendingUp, Wallet, ChevronRight } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS, SHADOW } from "../theme";
 import { Card, CardHead, Button, Empty, KPI, Badge, useToast, Toast } from "../components/UI";
 import { todayISO, monthKeyOf, fmtMoney, fmtDate, monthLabel, isExpensePaid, expensePaidDate, isExpenseOverdue, greetingFor } from "../lib/helpers";
 
-export default function DashboardScreen() {
+export default function DashboardScreen({ onNavigate }) {
   const { students, payments, expenses, loading, markPaid, markExpensePaid } = useStudioData();
   const [modal, setModal] = useState(null);
   const { toast, show: showToast } = useToast();
@@ -16,6 +16,10 @@ export default function DashboardScreen() {
     () => students.filter((s) => s.next_due_date <= todayISO()).sort((a, b) => a.next_due_date.localeCompare(b.next_due_date)),
     [students]
   );
+  const paidCount = students.filter((s) => s.next_due_date > todayISO()).length;
+  const upcomingCount = students.filter((s) => {
+    const d = s.next_due_date; return d > todayISO() && d <= new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
+  }).length;
   const overdueBills = useMemo(() => expenses.filter(isExpenseOverdue).sort((a, b) => a.due_date.localeCompare(b.due_date)), [expenses]);
   const monthPayments = payments.filter((p) => monthKeyOf(p.date) === thisMonthKey).sort((a, b) => b.date.localeCompare(a.date));
   const monthPaidExpenses = expenses
@@ -119,40 +123,33 @@ export default function DashboardScreen() {
         />
       </View>
 
-      <Card style={{ marginTop: 16 }}>
-        <CardHead eyebrow="Follow-up" title="Payment reminders" right={<Bell size={16} color={COLORS.muted} />} />
-        {overdue.length === 0 && overdueBills.length === 0 ? (
-          <Empty text="Nothing overdue — everyone and everything is up to date." />
-        ) : (
-          <View>
-            {overdue.map((st) => (
-              <View key={st.id} style={s.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.rowTitle}>{st.name}</Text>
-                  <Text style={s.rowSub}>{fmtMoney(st.fee)} · due {fmtDate(st.next_due_date)}</Text>
-                </View>
-                <TouchableOpacity onPress={() => remindViaWhatsApp(st)} style={s.iconBtn}>
-                  <Copy size={15} color={COLORS.brand} />
-                </TouchableOpacity>
-                <Button onPress={() => { markPaid(st); showToast(`${st.name} marked paid`); }} style={{ paddingVertical: 7, paddingHorizontal: 10 }}>
-                  Paid
-                </Button>
-              </View>
-            ))}
-            {overdueBills.map((e) => (
-              <View key={e.id} style={s.row}>
-                <View style={{ flex: 1 }}>
-                  <Text style={s.rowTitle}>{e.category} bill</Text>
-                  <Text style={s.rowSub}>{fmtMoney(e.amount)} · due {fmtDate(e.due_date)}</Text>
-                </View>
-                <Button onPress={() => markExpensePaid(e)} style={{ paddingVertical: 7, paddingHorizontal: 10 }}>
-                  Paid
-                </Button>
-              </View>
-            ))}
+      {/* Compact members tile */}
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={() => onNavigate?.("Students")}
+        style={[s.membersTile, SHADOW.sm]}
+      >
+        <View style={{ flex: 1 }}>
+          <Text style={s.membersTileEyebrow}>MEMBERS</Text>
+          <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 4 }}>
+            <Text style={s.membersTileCount}>{students.length}</Text>
+            <Text style={{ fontSize: 13, color: COLORS.muted }}>enrolled</Text>
           </View>
-        )}
-      </Card>
+          <View style={{ flexDirection: "row", gap: 14, marginTop: 8, flexWrap: "wrap" }}>
+            <View style={s.membersDot}>
+              <View style={[s.dot, { backgroundColor: COLORS.green }]} />
+              <Text style={s.membersLabel}>{paidCount} up to date</Text>
+            </View>
+            {overdue.length > 0 && (
+              <View style={s.membersDot}>
+                <View style={[s.dot, { backgroundColor: COLORS.red }]} />
+                <Text style={s.membersLabel}>{overdue.length} fee due</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        <ChevronRight size={18} color={COLORS.muted} />
+      </TouchableOpacity>
 
       <Card style={{ marginTop: 16 }}>
         <CardHead eyebrow="Insights" title="Tips for you" />
@@ -313,6 +310,21 @@ const s = StyleSheet.create({
   },
   modalHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", padding: 16, paddingTop: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   modalTitle: { fontSize: 17, fontWeight: "700", color: COLORS.brand, marginTop: 3 },
+  membersTile: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginTop: 16,
+  },
+  membersTileEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1, color: COLORS.muted, textTransform: "uppercase" },
+  membersTileCount: { fontSize: 28, fontWeight: "800", color: COLORS.brand },
+  membersDot: { flexDirection: "row", alignItems: "center", gap: 5 },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  membersLabel: { fontSize: 13, color: COLORS.text2 },
   greetCard: {
     flexDirection: "row",
     alignItems: "center",

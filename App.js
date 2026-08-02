@@ -87,7 +87,7 @@ function WideLayout({ email }) {
         </View>
         {/* Scrollable content — max-width centred */}
         <View style={wl.content}>
-          <ActiveComponent />
+          <ActiveComponent onNavigate={setActiveTab} />
         </View>
       </View>
     </View>
