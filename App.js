@@ -57,6 +57,14 @@ const TABS = [
 const WIDE_BREAKPOINT = 880;
 
 export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppRoot />
+    </ErrorBoundary>
+  );
+}
+
+function AppRoot() {
   const [session, setSession] = useState(undefined);
   const [biometricLocked, setBiometricLocked] = useState(false);
   const biometricChecked = React.useRef(false);
@@ -110,14 +118,12 @@ export default function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <StudioDataProvider>
+    <SafeAreaProvider>
+      <StudioDataProvider>
           <StatusBar style={isWideWeb ? "dark" : "light"} backgroundColor={isWideWeb ? COLORS.bg : COLORS.brand} />
           {isWideWeb ? <WideLayout email={session.user?.email} /> : <MobileLayout email={session.user?.email} />}
         </StudioDataProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }
 
