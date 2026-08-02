@@ -12,10 +12,15 @@
       "resizeMode": "contain",
       "backgroundColor": "#251A2E"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ojasbloom.studio"
+      "bundleIdentifier": "com.ojasbloom.studio",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.ojasbloom.studio",
@@ -27,6 +32,11 @@
     "web": {
       "bundler": "metro",
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "1d39874c-54e7-4faa-991f-db9a44cdafaf"
+      }
     }
   }
 }
