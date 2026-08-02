@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS } from "../theme";
@@ -19,6 +19,16 @@ export default function ReportsScreen() {
   const [period, setPeriod] = useState("Monthly");
   const [selectedKey, setSelectedKey] = useState(monthKeyOf(todayISO()));
   const [finTab, setFinTab] = useState("Income Statement");
+
+  // Auto-jump to the most recent month that actually has data
+  useEffect(() => {
+    if (loading) return;
+    const months = [
+      ...payments.map((p) => monthKeyOf(p.date)),
+      ...expenses.filter(isExpensePaid).map((e) => monthKeyOf(expensePaidDate(e))),
+    ].filter(Boolean).sort().reverse();
+    if (months.length > 0) setSelectedKey(months[0]);
+  }, [loading]);
 
   const monthIncome  = (k) => payments.filter((p) => monthKeyOf(p.date) === k).reduce((a, b) => a + Number(b.amount), 0);
   const monthExpense = (k) => expenses.filter((e) => isExpensePaid(e) && monthKeyOf(expensePaidDate(e)) === k).reduce((a, b) => a + Number(b.amount), 0);

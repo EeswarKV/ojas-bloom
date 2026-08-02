@@ -76,6 +76,14 @@ export default function ExpensesScreen() {
   const monthTotal = paidExpenses
     .filter((e) => expensePaidDate(e).slice(0, 7) === todayISO().slice(0, 7))
     .reduce((a, b) => a + Number(b.amount), 0);
+  const allTimeTotal = paidExpenses.reduce((a, b) => a + Number(b.amount), 0);
+
+  // Category breakdown for all-time
+  const categoryTotals = paidExpenses.reduce((acc, e) => {
+    acc[e.category] = (acc[e.category] || 0) + Number(e.amount);
+    return acc;
+  }, {});
+  const topCategories = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1]).slice(0, 4);
 
   if (loading) return <View style={s.center}><ActivityIndicator color={COLORS.brand} /></View>;
 
@@ -85,6 +93,28 @@ export default function ExpensesScreen() {
         <Button onPress={openAdd} style={{ marginBottom: 14, alignSelf: "flex-start", paddingHorizontal: 16 }}>
           + Add expense
         </Button>
+
+        {/* All-time investment summary */}
+        {allTimeTotal > 0 && (
+          <Card style={{ marginBottom: 16 }}>
+            <View style={{ padding: 16 }}>
+              <Text style={{ fontSize: 10, fontWeight: "700", letterSpacing: 1, color: COLORS.muted, textTransform: "uppercase", marginBottom: 8 }}>
+                TOTAL INVESTED — ALL TIME
+              </Text>
+              <Text style={{ fontSize: 28, fontWeight: "800", color: COLORS.red, letterSpacing: -0.5 }}>{fmtMoney(allTimeTotal)}</Text>
+              {topCategories.length > 0 && (
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                  {topCategories.map(([cat, amt]) => (
+                    <View key={cat} style={{ backgroundColor: COLORS.bg, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 }}>
+                      <Text style={{ fontSize: 11, color: COLORS.muted, fontWeight: "600" }}>{cat}</Text>
+                      <Text style={{ fontSize: 13, fontWeight: "700", color: COLORS.ink, marginTop: 1 }}>{fmtMoney(amt)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </Card>
+        )}
 
         {pendingBills.length > 0 && (
           <Card style={{ marginBottom: 16 }}>

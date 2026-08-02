@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Linking, ActivityIndicator, Platform } from "react-native";
-import { Copy, X, Bell, Leaf } from "lucide-react-native";
+import { Copy, X, Bell, Leaf, TrendingDown, TrendingUp, Wallet } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS, SHADOW } from "../theme";
 import { Card, CardHead, Button, Empty, KPI, Badge, useToast, Toast } from "../components/UI";
@@ -26,6 +26,11 @@ export default function DashboardScreen() {
   const expenseThisMonth = monthPaidExpenses.reduce((a, b) => a + Number(b.amount), 0);
   const netThisMonth = incomeThisMonth - expenseThisMonth;
   const duesTotal = overdue.reduce((a, s) => a + Number(s.fee), 0) + overdueBills.reduce((a, e) => a + Number(e.amount), 0);
+
+  // All-time totals
+  const totalIncome   = payments.reduce((a, b) => a + Number(b.amount), 0);
+  const totalExpenses = expenses.filter(isExpensePaid).reduce((a, b) => a + Number(b.amount), 0);
+  const totalNet      = totalIncome - totalExpenses;
 
   const tips = useMemo(() => {
     const t = [];
@@ -59,11 +64,9 @@ export default function DashboardScreen() {
     <View style={{ flex: 1 }}>
     <ScrollView style={s.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
 
-      {/* Greeting banner */}
+      {/* Greeting */}
       <View style={[s.greetCard, SHADOW.sm]}>
-        <View style={s.greetIcon}>
-          <Leaf size={18} color={COLORS.gold} />
-        </View>
+        <View style={s.greetIcon}><Leaf size={18} color={COLORS.gold} /></View>
         <View style={{ flex: 1 }}>
           <Text style={s.greetTitle}>{greetingFor()} 🙏</Text>
           <Text style={s.greetSub}>
@@ -73,7 +76,31 @@ export default function DashboardScreen() {
         </View>
       </View>
 
-      <View style={s.kpiGrid}>
+      {/* All-time summary */}
+      <Card style={{ marginBottom: 14, padding: 16 }}>
+        <Text style={s.sectionLabel}>STUDIO TOTALS — ALL TIME</Text>
+        <View style={{ flexDirection: "row", gap: 0, marginTop: 10 }}>
+          <View style={s.totalCol}>
+            <View style={s.totalIcon}><TrendingUp size={14} color={COLORS.green} /></View>
+            <Text style={s.totalLabel}>Total income</Text>
+            <Text style={[s.totalValue, { color: COLORS.green }]}>{fmtMoney(totalIncome)}</Text>
+          </View>
+          <View style={s.totalDivider} />
+          <View style={s.totalCol}>
+            <View style={s.totalIcon}><TrendingDown size={14} color={COLORS.red} /></View>
+            <Text style={s.totalLabel}>Total invested</Text>
+            <Text style={[s.totalValue, { color: COLORS.red }]}>{fmtMoney(totalExpenses)}</Text>
+          </View>
+          <View style={s.totalDivider} />
+          <View style={s.totalCol}>
+            <View style={s.totalIcon}><Wallet size={14} color={totalNet >= 0 ? COLORS.brand : COLORS.red} /></View>
+            <Text style={s.totalLabel}>Net balance</Text>
+            <Text style={[s.totalValue, { color: totalNet >= 0 ? COLORS.brand : COLORS.red }]}>{fmtMoney(totalNet)}</Text>
+          </View>
+        </View>
+      </Card>
+
+      {/* This month KPIs */}
         <KPI label="Income this month" value={fmtMoney(incomeThisMonth)} onPress={() => setModal("income")} />
         <KPI label="Expenses this month" value={fmtMoney(expenseThisMonth)} color={COLORS.goldDark} onPress={() => setModal("expense")} />
         <KPI
@@ -304,4 +331,10 @@ const s = StyleSheet.create({
   },
   greetTitle: { fontSize: 16, fontWeight: "700", color: "#F6F2F8" },
   greetSub: { fontSize: 12, color: "#B6A9C0", marginTop: 2 },
+  sectionLabel: { fontSize: 10, fontWeight: "700", letterSpacing: 1, color: COLORS.muted, textTransform: "uppercase" },
+  totalCol: { flex: 1, alignItems: "center", gap: 4 },
+  totalDivider: { width: 1, backgroundColor: COLORS.border, marginVertical: 4 },
+  totalIcon: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.bg, alignItems: "center", justifyContent: "center", marginBottom: 2 },
+  totalLabel: { fontSize: 11, color: COLORS.muted, textAlign: "center" },
+  totalValue: { fontSize: 16, fontWeight: "700", textAlign: "center" },
 });
