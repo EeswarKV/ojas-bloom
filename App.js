@@ -98,25 +98,26 @@ function MobileLayout() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerStyle: { backgroundColor: COLORS.bg, shadowColor: "transparent", elevation: 0, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-          headerTintColor: COLORS.brand,
-          headerTitleStyle: { fontWeight: "700", fontSize: 18 },
-          tabBarActiveTintColor: COLORS.brand,
-          tabBarInactiveTintColor: COLORS.muted,
-          tabBarStyle: { borderTopColor: COLORS.border },
-        }}
-      >
-        {TABS.map((t) => (
-          <Tab.Screen
-            key={t.id}
-            name={t.id}
-            component={t.Component}
-            options={{ tabBarIcon: ({ color, size }) => <t.icon color={color} size={size} /> }}
-          />
-        ))}
-      </Tab.Navigator>
-    </NavigationContainer>
+        <Tab.Navigator
+          screenOptions={{
+            headerStyle: { backgroundColor: COLORS.bg, shadowColor: "transparent", elevation: 0, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+            headerTintColor: COLORS.brand,
+            headerTitleStyle: { fontWeight: "700", fontSize: 18 },
+            tabBarActiveTintColor: COLORS.brand,
+            tabBarInactiveTintColor: COLORS.muted,
+            tabBarStyle: { borderTopColor: COLORS.border },
+          }}
+        >
+          {TABS.map((t) => (
+            <Tab.Screen
+              key={t.id}
+              name={t.id}
+              component={t.Component}
+              options={{ tabBarIcon: ({ color, size }) => <t.icon color={color} size={size} /> }}
+            />
+          ))}
+        </Tab.Navigator>
+      </NavigationContainer>
     </SafeAreaProvider>
+  );
 }
