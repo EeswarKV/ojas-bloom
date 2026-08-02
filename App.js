@@ -93,8 +93,8 @@ function WideLayout({ email }) {
 }
 
 const wl = StyleSheet.create({
-  shell: { flex: 1, flexDirection: "row", backgroundColor: "#EDE8F2" },
-  body: { flex: 1, backgroundColor: "#EDE8F2" },
+  shell: { flex: 1, flexDirection: "row", backgroundColor: COLORS.bg },
+  body: { flex: 1, backgroundColor: COLORS.bg },
   pageHeader: {
     paddingHorizontal: 36,
     paddingTop: 24,
@@ -105,7 +105,7 @@ const wl = StyleSheet.create({
   },
   pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.goldDark, textTransform: "uppercase" },
   pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.brand, marginTop: 3, letterSpacing: -0.3 },
-  content: { flex: 1, maxWidth: 860, width: "100%", alignSelf: "center", paddingHorizontal: 8 },
+  content: { flex: 1 },
 });
 
 // ---- phones: branded plum header + branded bottom tab bar ----
