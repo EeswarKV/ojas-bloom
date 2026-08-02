@@ -7,24 +7,28 @@ import { Card, CardHead, Button, Field, InputBox, Empty, Badge, Avatar, SearchBa
 import { todayISO, fmtMoney, fmtDate } from "../lib/helpers";
 
 const EMPTY_FORM = { name: "", phone: "", type: "Offline", timing: "", fee: "", next_due_date: todayISO() };
+const TYPES = ["All", "Offline", "Online", "Personal"];
 
 export default function StudentsScreen() {
   const { students, loading, addStudent, deleteStudent, updateStudent, markPaid } = useStudioData();
   const [showAdd, setShowAdd] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("All");
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const { toast, show: showToast } = useToast();
 
   const update = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const filtered = students
-    .filter(
-      (s) =>
-        s.name.toLowerCase().includes(search.toLowerCase()) ||
-        (s.phone || "").includes(search)
-    )
+    .filter((s) => {
+      const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) || (s.phone || "").includes(search);
+      const matchType = typeFilter === "All" || s.type === typeFilter;
+      return matchSearch && matchType;
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const countOf = (t) => students.filter((s) => t === "All" ? true : s.type === t).length;
 
   const submit = async () => {
     if (!form.name.trim() || !form.fee) return;
@@ -65,6 +69,20 @@ export default function StudentsScreen() {
       <ScrollView style={s.wrap} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
         <SearchBar value={search} onChangeText={setSearch} placeholder="Search by name or phone…" />
 
+        {/* Type filter tabs */}
+        <View style={s.typeTabs}>
+          {TYPES.map((t) => (
+            <TouchableOpacity
+              key={t}
+              onPress={() => setTypeFilter(t)}
+              style={[s.typeTab, typeFilter === t && s.typeTabActive]}
+            >
+              <Text style={[s.typeTabText, typeFilter === t && s.typeTabTextActive]}>{t}</Text>
+              <Text style={[s.typeTabCount, typeFilter === t && { color: COLORS.gold }]}>{countOf(t)}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
         <Button
           onPress={() => { setShowAdd((v) => !v); setForm({ ...EMPTY_FORM }); }}
           style={{ marginBottom: 14, alignSelf: "flex-start", paddingHorizontal: 16 }}
@@ -77,7 +95,7 @@ export default function StudentsScreen() {
         <Card>
           <CardHead
             eyebrow={`${filtered.length} of ${students.length} students`}
-            title="Roster"
+            title={typeFilter === "All" ? "Roster" : `${typeFilter} students`}
           />
           {filtered.length === 0 ? (
             <Empty text={search ? "No students match your search." : "No students yet — add your first one above."} />
@@ -166,7 +184,7 @@ function StudentForm({ form, update, onSubmit, onClose, isEdit }) {
         </Field>
         <Field label="Training type">
           <View style={{ flexDirection: "row", gap: 8 }}>
-            {["Offline", "Online"].map((t) => (
+              {["Offline", "Online", "Personal"].map((t) => (
               <Toggle key={t} active={form.type === t} onPress={() => update("type", t)} label={t} />
             ))}
           </View>
@@ -187,6 +205,12 @@ function StudentForm({ form, update, onSubmit, onClose, isEdit }) {
 }
 
 const s = StyleSheet.create({
+  typeTabs: { flexDirection: "row", gap: 6, marginBottom: 12 },
+  typeTab: { flex: 1, alignItems: "center", paddingVertical: 8, borderRadius: RADIUS.sm, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface },
+  typeTabActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
+  typeTabText: { fontSize: 12, fontWeight: "600", color: COLORS.text2 },
+  typeTabTextActive: { color: "#fff" },
+  typeTabCount: { fontSize: 11, color: COLORS.muted, marginTop: 1 },
   wrap: { flex: 1, backgroundColor: COLORS.bg },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: COLORS.bg },
   studentRow: { flexDirection: "row", padding: 14, borderTopWidth: 1, borderTopColor: COLORS.border, gap: 12, alignItems: "flex-start" },
