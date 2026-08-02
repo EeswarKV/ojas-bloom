@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Linking, Activity
 import { Plus, X, Trash2, Pencil } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS, SHADOW } from "../theme";
-import { Card, CardHead, Button, Field, InputBox, Empty, Badge, Avatar, SearchBar, Toggle, useToast, Toast } from "../components/UI";
+import { Card, CardHead, Button, Field, InputBox, Empty, Badge, Avatar, SearchBar, Toggle, DateField, useToast, Toast } from "../components/UI";
 import { todayISO, fmtMoney, fmtDate } from "../lib/helpers";
 
 const EMPTY_FORM = { name: "", phone: "", type: "Offline", timing: "", fee: "", next_due_date: todayISO() };
@@ -177,8 +177,8 @@ function StudentForm({ form, update, onSubmit, onClose, isEdit }) {
         <Field label="Monthly fee (₹)">
           <InputBox value={form.fee} onChangeText={(v) => update("fee", v)} keyboardType="numeric" placeholder="1500" />
         </Field>
-        <Field label="Next due date (YYYY-MM-DD)">
-          <InputBox value={form.next_due_date} onChangeText={(v) => update("next_due_date", v)} placeholder={todayISO()} />
+        <Field label="Next due date">
+          <DateField value={form.next_due_date} onChange={(v) => update("next_due_date", v)} />
         </Field>
         <Button onPress={onSubmit}>{isEdit ? "Save changes" : "Add student"}</Button>
       </View>

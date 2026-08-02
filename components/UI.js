@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Animated } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Leaf, User, Search } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Modal } from "react-native";
+import { Leaf, Search, ChevronDown, ChevronUp, Calendar, Check } from "lucide-react-native";
 import { COLORS, SPACING, RADIUS, SHADOW } from "../theme";
-import { initials, avatarColor } from "../lib/helpers";
+import { initials, avatarColor, fmtDate } from "../lib/helpers";
 
 export function Card({ children, style }) {
   return <View style={[s.card, style]}>{children}</View>;
@@ -334,4 +333,146 @@ const s = StyleSheet.create({
     alignItems: "center",
     ...SHADOW.md,
   },
+  dateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#FDFDFC",
+  },
+  dateBtnText: { flex: 1, fontSize: 14, color: COLORS.ink },
+  dateOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
+  dateSheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: RADIUS.xl,
+    borderTopRightRadius: RADIUS.xl,
+    paddingTop: 20,
+    ...SHADOW.md,
+  },
+  dateSheetTitle: { fontSize: 15, fontWeight: "700", color: COLORS.ink, textAlign: "center", marginBottom: 16 },
+  dateWheels: { flexDirection: "row", justifyContent: "center", gap: 16, paddingHorizontal: 16 },
+  wheel: { flex: 1, alignItems: "center", gap: 4 },
+  wheelLabel: { fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, color: COLORS.muted, fontWeight: "600" },
+  wheelBtn: { padding: 8 },
+  wheelValue: { fontSize: 20, fontWeight: "700", color: COLORS.brand, minWidth: 48, textAlign: "center" },
+  dropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#FDFDFC",
+  },
+  dropdownText: { fontSize: 14, color: COLORS.ink, flex: 1 },
+  ddOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.3)", justifyContent: "center", padding: 32 },
+  ddSheet: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    overflow: "hidden",
+    ...SHADOW.md,
+  },
+  ddItem: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingVertical: 13, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  ddItemActive: { backgroundColor: COLORS.brand },
+  ddItemText: { fontSize: 14, color: COLORS.ink },
 });
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function parseDateParts(iso) {
+  const dt = new Date((iso || "2026-01-01") + "T00:00:00");
+  return { y: dt.getFullYear(), m: dt.getMonth() + 1, day: dt.getDate() };
+}
+
+function Wheel({ label, value, min, max, onChange, display }) {
+  return (
+    <View style={s.wheel}>
+      <Text style={s.wheelLabel}>{label}</Text>
+      <TouchableOpacity onPress={() => value < max && onChange(value + 1)} style={s.wheelBtn}>
+        <ChevronUp size={22} color={value < max ? COLORS.brand : COLORS.border} />
+      </TouchableOpacity>
+      <Text style={s.wheelValue}>{display ? display(value) : String(value)}</Text>
+      <TouchableOpacity onPress={() => value > min && onChange(value - 1)} style={s.wheelBtn}>
+        <ChevronDown size={22} color={value > min ? COLORS.brand : COLORS.border} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export function DateField({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const [d, setD] = useState(() => parseDateParts(value));
+
+  const openPicker = () => { setD(parseDateParts(value)); setOpen(true); };
+  const confirm = () => {
+    const daysInMonth = new Date(d.y, d.m, 0).getDate();
+    const clampedDay = Math.min(d.day, daysInMonth);
+    onChange(`${d.y}-${String(d.m).padStart(2,"0")}-${String(clampedDay).padStart(2,"0")}`);
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <TouchableOpacity onPress={openPicker} style={s.dateBtn}>
+        <Calendar size={14} color={COLORS.brand} />
+        <Text style={s.dateBtnText}>{fmtDate(value)}</Text>
+        <ChevronDown size={13} color={COLORS.muted} />
+      </TouchableOpacity>
+      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setOpen(false)}>
+        <View style={s.dateOverlay}>
+          <View style={s.dateSheet}>
+            <Text style={s.dateSheetTitle}>Pick a date</Text>
+            <View style={s.dateWheels}>
+              <Wheel label="Day" value={d.day} min={1} max={new Date(d.y, d.m, 0).getDate()}
+                onChange={(v) => setD((p) => ({ ...p, day: v }))} />
+              <Wheel label="Month" value={d.m} min={1} max={12}
+                display={(v) => MONTHS[v - 1]}
+                onChange={(v) => setD((p) => ({ ...p, m: v }))} />
+              <Wheel label="Year" value={d.y} min={2020} max={2035}
+                onChange={(v) => setD((p) => ({ ...p, y: v }))} />
+            </View>
+            <View style={{ flexDirection: "row", gap: 8, padding: 16 }}>
+              <Button onPress={() => setOpen(false)} variant="ghost" style={{ flex: 1 }}>Cancel</Button>
+              <Button onPress={confirm} style={{ flex: 1 }}>Set date</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </>
+  );
+}
+
+export function Dropdown({ value, options, onChange, placeholder = "Select…" }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <TouchableOpacity onPress={() => setOpen(true)} style={s.dropdown}>
+        <Text style={[s.dropdownText, !value && { color: COLORS.muted }]}>{value || placeholder}</Text>
+        <ChevronDown size={14} color={COLORS.muted} />
+      </TouchableOpacity>
+      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+        <TouchableOpacity style={s.ddOverlay} activeOpacity={1} onPress={() => setOpen(false)}>
+          <View style={s.ddSheet}>
+            {options.map((opt) => (
+              <TouchableOpacity
+                key={opt}
+                onPress={() => { onChange(opt); setOpen(false); }}
+                style={[s.ddItem, opt === value && s.ddItemActive]}
+              >
+                <Text style={[s.ddItemText, opt === value && { color: "#fff", fontWeight: "700" }]}>{opt}</Text>
+                {opt === value && <Check size={14} color="#fff" />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+}
+
