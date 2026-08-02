@@ -3,7 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { View, Text, ActivityIndicator, useWindowDimensions, Platform } from "react-native";
+import { View, Text, ActivityIndicator, useWindowDimensions, Platform, StyleSheet } from "react-native";
 import { LayoutDashboard, Users, Receipt, BarChart3, StickyNote } from "lucide-react-native";
 
 import { supabase } from "./lib/supabase";
@@ -62,39 +62,51 @@ export default function App() {
   );
 }
 
-// ---- wide/web: sidebar layout matching the original design ----
+// ---- wide/web: clean sidebar + max-width content ----
 function WideLayout({ email }) {
   const [activeTab, setActiveTab] = useState("Overview");
   const current = TABS.find((t) => t.id === activeTab);
   const ActiveComponent = current.Component;
 
   return (
-    <View style={{ flex: 1, flexDirection: "row", backgroundColor: COLORS.bg }}>
-      <Sidebar tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} onSignOut={() => supabase.auth.signOut()} />
-      <View style={{ flex: 1 }}>
-        <AppHeader email={email} onSignOut={() => supabase.auth.signOut()} dark={false} />
-        <View
-          style={{
-            paddingHorizontal: 32,
-            paddingTop: 18,
-            paddingBottom: 18,
-            borderBottomWidth: 1,
-            borderBottomColor: COLORS.border,
-            backgroundColor: COLORS.bg,
-          }}
-        >
-          <Text style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: 1, color: COLORS.goldDark, fontWeight: "700" }}>
-            {current.label}
-          </Text>
-          <Text style={{ fontSize: 22, fontWeight: "700", color: COLORS.brand, marginTop: 2 }}>{current.label}</Text>
+    <View style={wl.shell}>
+      <Sidebar
+        tabs={TABS}
+        activeTab={activeTab}
+        onSelect={setActiveTab}
+        onSignOut={() => supabase.auth.signOut()}
+        email={email}
+      />
+      <View style={wl.body}>
+        {/* Page header */}
+        <View style={wl.pageHeader}>
+          <Text style={wl.pageEyebrow}>Ojas Bloom Studio</Text>
+          <Text style={wl.pageTitle}>{current.label}</Text>
         </View>
-        <View style={{ flex: 1 }}>
+        {/* Scrollable content — max-width centred */}
+        <View style={wl.content}>
           <ActiveComponent />
         </View>
       </View>
     </View>
   );
 }
+
+const wl = StyleSheet.create({
+  shell: { flex: 1, flexDirection: "row", backgroundColor: "#EDE8F2" },
+  body: { flex: 1, backgroundColor: "#EDE8F2" },
+  pageHeader: {
+    paddingHorizontal: 36,
+    paddingTop: 26,
+    paddingBottom: 18,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.goldDark, textTransform: "uppercase" },
+  pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.brand, marginTop: 3, letterSpacing: -0.3 },
+  content: { flex: 1, maxWidth: 1080, width: "100%", alignSelf: "center" },
+});
 
 // ---- phones: branded plum header + branded bottom tab bar ----
 function MobileLayout({ email }) {

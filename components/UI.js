@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Modal, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Leaf, Search, ChevronDown, ChevronUp, Calendar, Check, User } from "lucide-react-native";
+import { Leaf, Search, ChevronDown, ChevronUp, Calendar, Check, User, LogOut } from "lucide-react-native";
 import { COLORS, SPACING, RADIUS, SHADOW } from "../theme";
 import { initials, avatarColor, fmtDate } from "../lib/helpers";
 
@@ -143,50 +143,76 @@ export function Toast({ visible, message, type = "success" }) {
   );
 }
 
-export function Sidebar({ tabs, activeTab, onSelect, onSignOut }) {
+export function Sidebar({ tabs, activeTab, onSelect, onSignOut, email }) {
+  const initial = (email || "S")[0].toUpperCase();
   return (
     <View style={sb.wrap}>
-      <View style={sb.logoRow}>
+      {/* Brand / logo */}
+      <View style={sb.brand}>
         <View style={sb.logoMark}>
-          <Leaf color="#fff" size={16} />
+          <Leaf color={COLORS.gold} size={18} />
         </View>
         <View>
-          <Text style={sb.word}>Ojas Bloom</Text>
-          <Text style={sb.wordSub}>Studio Manager</Text>
+          <Text style={sb.appName}>Ojas Bloom</Text>
+          <Text style={sb.appSub}>Studio Manager</Text>
         </View>
       </View>
-      <View style={{ flex: 1, gap: 2 }}>
+
+      {/* Section label */}
+      <Text style={sb.sectionLabel}>MENU</Text>
+
+      {/* Nav items */}
+      <View style={{ flex: 1, gap: 2, marginTop: 4 }}>
         {tabs.map((t) => {
           const Icon = t.icon;
           const active = activeTab === t.id;
           return (
-            <TouchableOpacity key={t.id} onPress={() => onSelect(t.id)} style={[sb.navItem, active && sb.navItemActive]}>
-              <Icon size={16} color={active ? "#fff" : "#CBBED3"} />
-              <Text style={[sb.navLabel, active && { color: "#fff" }]}>{t.label}</Text>
+            <TouchableOpacity
+              key={t.id}
+              onPress={() => onSelect(t.id)}
+              style={[sb.navItem, active && sb.navItemActive]}
+            >
+              <Icon size={15} color={active ? COLORS.gold : "#7A6888"} />
+              <Text style={[sb.navLabel, active && sb.navLabelActive]}>{t.label}</Text>
+              {active && <View style={sb.activeDot} />}
             </TouchableOpacity>
           );
         })}
       </View>
+
+      {/* User / sign-out */}
       {onSignOut && (
-        <TouchableOpacity onPress={onSignOut} style={sb.signOut}>
-          <Text style={sb.signOutText}>Sign out</Text>
-        </TouchableOpacity>
+        <View style={sb.userSection}>
+          <View style={sb.userAvatar}>
+            <Text style={sb.userInitial}>{initial}</Text>
+          </View>
+          <Text style={sb.userEmail} numberOfLines={1}>{email || "Staff"}</Text>
+          <TouchableOpacity onPress={onSignOut} style={sb.logoutBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <LogOut size={15} color="#7A6888" />
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
 }
 
 const sb = StyleSheet.create({
-  wrap: { width: 236, backgroundColor: COLORS.brand, padding: 14, height: "100%" },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 8, paddingBottom: 22, paddingTop: 4 },
-  logoMark: { width: 34, height: 34, borderRadius: 9, backgroundColor: COLORS.gold, alignItems: "center", justifyContent: "center" },
-  word: { fontSize: 15, fontWeight: "600", color: "#F6F2F8" },
-  wordSub: { fontSize: 11, color: "#B6A9C0", marginTop: 1 },
-  navItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 8, borderLeftWidth: 3, borderLeftColor: "transparent" },
-  navItemActive: { backgroundColor: COLORS.brandLight, borderLeftColor: COLORS.gold },
-  navLabel: { fontSize: 13.5, fontWeight: "500", color: "#CBBED3" },
-  signOut: { padding: 12, borderTopWidth: 1, borderTopColor: COLORS.brandLight, marginTop: 8 },
-  signOutText: { fontSize: 12, color: "#B6A9C0" },
+  wrap: { width: 252, backgroundColor: COLORS.brand, height: "100%", flexDirection: "column", borderRightWidth: 1, borderRightColor: COLORS.brandLight },
+  brand: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 18, borderBottomWidth: 1, borderBottomColor: COLORS.brandLight },
+  logoMark: { width: 36, height: 36, borderRadius: 10, backgroundColor: COLORS.brandLight, alignItems: "center", justifyContent: "center" },
+  appName: { fontSize: 15, fontWeight: "700", color: "#F6F2F8", letterSpacing: -0.2 },
+  appSub: { fontSize: 11, color: "#8B7A98", marginTop: 1 },
+  sectionLabel: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: "#4A3D5C", paddingHorizontal: 20, paddingTop: 16, paddingBottom: 4 },
+  navItem: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10, paddingHorizontal: 14, marginHorizontal: 8, borderRadius: 8 },
+  navItemActive: { backgroundColor: COLORS.brandLight },
+  navLabel: { flex: 1, fontSize: 13.5, fontWeight: "500", color: "#8B7A98" },
+  navLabelActive: { color: "#F6F2F8", fontWeight: "600" },
+  activeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.gold },
+  userSection: { flexDirection: "row", alignItems: "center", gap: 10, padding: 16, borderTopWidth: 1, borderTopColor: COLORS.brandLight },
+  userAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.gold, alignItems: "center", justifyContent: "center" },
+  userInitial: { color: COLORS.brand, fontSize: 13, fontWeight: "700" },
+  userEmail: { flex: 1, fontSize: 12, color: "#B6A9C0", fontWeight: "500" },
+  logoutBtn: { padding: 4 },
 });
 
 export function AppHeader({ email, onSignOut, dark }) {
@@ -297,7 +323,7 @@ const s = StyleSheet.create({
   },
   toggleActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   badge: { alignSelf: "flex-start", paddingVertical: 3, paddingHorizontal: 9, borderRadius: RADIUS.pill },
-  kpi: { flexBasis: "48%", padding: 16 },
+  kpi: { flex: 1, minWidth: 140, padding: 16 },
   kpiLabel: { fontSize: 12, color: COLORS.muted, fontWeight: "500" },
   kpiValue: { fontSize: 22, fontWeight: "700", marginTop: 4 },
   kpiSub: { fontSize: 11.5, color: COLORS.muted, marginTop: 4 },
