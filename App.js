@@ -59,22 +59,33 @@ const WIDE_BREAKPOINT = 880;
 export default function App() {
   const [session, setSession] = useState(undefined);
   const [biometricLocked, setBiometricLocked] = useState(false);
+  const biometricChecked = React.useRef(false);
   const { width } = useWindowDimensions();
   const isWideWeb = Platform.OS === "web" && width >= WIDE_BREAKPOINT;
 
+  // Initial session load
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      // On native: if there's an existing session and biometrics are enrolled, lock
-      if (data.session && Platform.OS !== "web") {
-        const hasHW = await LocalAuthentication.hasHardwareAsync();
-        const enrolled = await LocalAuthentication.isEnrolledAsync();
-        if (hasHW && enrolled) setBiometricLocked(true);
-      }
-    });
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
+
+  // Whenever session becomes available, run biometric check once
+  useEffect(() => {
+    if (!session || Platform.OS === "web" || biometricChecked.current) return;
+    biometricChecked.current = true;
+    (async () => {
+      try {
+        const hasHW = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHW && enrolled) {
+          setBiometricLocked(true);
+        }
+      } catch (e) {
+        // biometric unavailable — proceed normally
+      }
+    })();
+  }, [session]);
 
   if (session === undefined) {
     return (
