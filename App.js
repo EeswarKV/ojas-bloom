@@ -97,7 +97,7 @@ const wl = StyleSheet.create({
   body: { flex: 1, backgroundColor: "#EDE8F2" },
   pageHeader: {
     paddingHorizontal: 36,
-    paddingTop: 26,
+    paddingTop: 24,
     paddingBottom: 18,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
@@ -105,7 +105,7 @@ const wl = StyleSheet.create({
   },
   pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.goldDark, textTransform: "uppercase" },
   pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.brand, marginTop: 3, letterSpacing: -0.3 },
-  content: { flex: 1, maxWidth: 1080, width: "100%", alignSelf: "center" },
+  content: { flex: 1, maxWidth: 860, width: "100%", alignSelf: "center", paddingHorizontal: 8 },
 });
 
 // ---- phones: branded plum header + branded bottom tab bar ----

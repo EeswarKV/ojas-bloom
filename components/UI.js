@@ -323,7 +323,7 @@ const s = StyleSheet.create({
   },
   toggleActive: { backgroundColor: COLORS.brand, borderColor: COLORS.brand },
   badge: { alignSelf: "flex-start", paddingVertical: 3, paddingHorizontal: 9, borderRadius: RADIUS.pill },
-  kpi: { flex: 1, minWidth: 140, padding: 16 },
+  kpi: { flex: 1, minWidth: 140, maxWidth: 220, padding: 16 },
   kpiLabel: { fontSize: 12, color: COLORS.muted, fontWeight: "500" },
   kpiValue: { fontSize: 22, fontWeight: "700", marginTop: 4 },
   kpiSub: { fontSize: 11.5, color: COLORS.muted, marginTop: 4 },
