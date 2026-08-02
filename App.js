@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Component } from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { View, Text, ActivityIndicator, useWindowDimensions, Platform, StyleSheet } from "react-native";
+import { View, Text, ActivityIndicator, useWindowDimensions, Platform, StyleSheet, ScrollView } from "react-native";
 import { LayoutDashboard, Users, Receipt, BarChart3, StickyNote } from "lucide-react-native";
 
 import { supabase } from "./lib/supabase";
@@ -16,6 +16,32 @@ import StudentsScreen from "./screens/StudentsScreen";
 import ExpensesScreen from "./screens/ExpensesScreen";
 import ReportsScreen from "./screens/ReportsScreen";
 import NotesScreen from "./screens/NotesScreen";
+
+// ---- Error boundary: shows error instead of blank screen in production ----
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24, backgroundColor: "#FAF8F6" }}>
+          <Text style={{ fontSize: 18, fontWeight: "700", color: "#251A2E", marginBottom: 12 }}>Something went wrong</Text>
+          <ScrollView style={{ maxHeight: 300 }}>
+            <Text style={{ fontSize: 12, color: "#9B4A4A", fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}>
+              {this.state.error?.stack || this.state.error?.message || "Unknown error"}
+            </Text>
+          </ScrollView>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -53,12 +79,14 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <StudioDataProvider>
-        <StatusBar style={isWideWeb ? "dark" : "light"} backgroundColor={isWideWeb ? COLORS.bg : COLORS.brand} />
-        {isWideWeb ? <WideLayout email={session.user?.email} /> : <MobileLayout email={session.user?.email} />}
-      </StudioDataProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <StudioDataProvider>
+          <StatusBar style={isWideWeb ? "dark" : "light"} backgroundColor={isWideWeb ? COLORS.bg : COLORS.brand} />
+          {isWideWeb ? <WideLayout email={session.user?.email} /> : <MobileLayout email={session.user?.email} />}
+        </StudioDataProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
