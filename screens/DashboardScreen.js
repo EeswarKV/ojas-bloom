@@ -84,36 +84,39 @@ export default function DashboardScreen({ onNavigate }) {
 
       {/* All-time summary */}
       <Card style={{ marginBottom: 14, padding: 16 }}>
-        <Text style={s.sectionLabel}>STUDIO TOTALS — ALL TIME</Text>
+        <Text style={s.sectionLabel}>FINANCIALS — ALL TIME</Text>
         <View style={{ flexDirection: "row", gap: 0, marginTop: 10 }}>
           <View style={s.totalCol}>
             <View style={s.totalIcon}><TrendingUp size={14} color={COLORS.green} /></View>
-            <Text style={s.totalLabel}>Total income</Text>
+            <Text style={s.totalLabel}>Total revenue</Text>
             <Text style={[s.totalValue, { color: COLORS.green }]}>{fmtMoney(totalIncome)}</Text>
+            <Text style={{ fontSize: 10, color: COLORS.muted, marginTop: 2, textAlign: "center" }}>all fees collected</Text>
           </View>
           <View style={s.totalDivider} />
           <View style={s.totalCol}>
             <View style={s.totalIcon}><TrendingDown size={14} color={COLORS.red} /></View>
-            <Text style={s.totalLabel}>Total invested</Text>
+            <Text style={s.totalLabel}>Total expenses</Text>
             <Text style={[s.totalValue, { color: COLORS.red }]}>{fmtMoney(totalExpenses)}</Text>
+            <Text style={{ fontSize: 10, color: COLORS.muted, marginTop: 2, textAlign: "center" }}>construction + running</Text>
           </View>
           <View style={s.totalDivider} />
           <View style={s.totalCol}>
-            <View style={s.totalIcon}><Wallet size={14} color={totalNet >= 0 ? COLORS.brand : COLORS.red} /></View>
-            <Text style={s.totalLabel}>Net balance</Text>
-            <Text style={[s.totalValue, { color: totalNet >= 0 ? COLORS.brand : COLORS.red }]}>{fmtMoney(totalNet)}</Text>
+            <View style={s.totalIcon}><Wallet size={14} color={totalNet >= 0 ? COLORS.green : COLORS.red} /></View>
+            <Text style={s.totalLabel}>Net profit / loss</Text>
+            <Text style={[s.totalValue, { color: totalNet >= 0 ? COLORS.green : COLORS.red }]}>{fmtMoney(totalNet)}</Text>
+            <Text style={{ fontSize: 10, color: COLORS.muted, marginTop: 2, textAlign: "center" }}>revenue − expenses</Text>
           </View>
         </View>
       </Card>
 
       {/* This month KPIs */}
       <View style={s.kpiGrid}>
-        <KPI label="Income this month" value={fmtMoney(incomeThisMonth)} onPress={() => setModal("income")} />
+        <KPI label="Revenue this month" value={fmtMoney(incomeThisMonth)} onPress={() => setModal("income")} />
         <KPI label="Expenses this month" value={fmtMoney(expenseThisMonth)} color={COLORS.goldDark} onPress={() => setModal("expense")} />
         <KPI
-          label="Net this month"
+          label="Profit this month"
           value={fmtMoney(netThisMonth)}
-          color={netThisMonth >= 0 ? COLORS.brand : COLORS.red}
+          color={netThisMonth >= 0 ? COLORS.green : COLORS.red}
           onPress={() => setModal("net")}
         />
         <KPI
