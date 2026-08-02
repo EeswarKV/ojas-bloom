@@ -78,10 +78,12 @@ function WideLayout({ email }) {
         email={email}
       />
       <View style={wl.body}>
-        {/* Page header */}
+        {/* Page header — full-width white bar, text aligned with content */}
         <View style={wl.pageHeader}>
-          <Text style={wl.pageEyebrow}>Ojas Bloom Studio</Text>
-          <Text style={wl.pageTitle}>{current.label}</Text>
+          <View style={wl.headerInner}>
+            <Text style={wl.pageEyebrow}>Ojas Bloom Studio</Text>
+            <Text style={wl.pageTitle}>{current.label}</Text>
+          </View>
         </View>
         {/* Scrollable content — max-width centred */}
         <View style={wl.content}>
@@ -96,16 +98,21 @@ const wl = StyleSheet.create({
   shell: { flex: 1, flexDirection: "row", backgroundColor: COLORS.bg },
   body: { flex: 1, backgroundColor: COLORS.bg },
   pageHeader: {
-    paddingHorizontal: 36,
-    paddingTop: 24,
-    paddingBottom: 18,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  headerInner: {
+    maxWidth: 900,
+    width: "100%",
+    alignSelf: "center",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 18,
+  },
   pageEyebrow: { fontSize: 10, fontWeight: "700", letterSpacing: 1.2, color: COLORS.goldDark, textTransform: "uppercase" },
   pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.brand, marginTop: 3, letterSpacing: -0.3 },
-  content: { flex: 1 },
+  content: { flex: 1, maxWidth: 900, width: "100%", alignSelf: "center" },
 });
 
 // ---- phones: branded plum header + branded bottom tab bar ----
