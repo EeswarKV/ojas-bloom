@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { View, Text, ActivityIndicator, useWindowDimensions, Platform } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { LayoutDashboard, Users, Receipt, BarChart3, StickyNote } from "lucide-react-native";
 
 import { supabase } from "./lib/supabase";
@@ -95,7 +96,8 @@ function WideLayout() {
 // ---- phones: bottom tab bar, no dark header (each screen provides its own eyebrow via CardHead) ----
 function MobileLayout() {
   return (
-    <NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
       <Tab.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: COLORS.bg, shadowColor: "transparent", elevation: 0, borderBottomWidth: 1, borderBottomColor: COLORS.border },
@@ -116,5 +118,5 @@ function MobileLayout() {
         ))}
       </Tab.Navigator>
     </NavigationContainer>
-  );
+    </SafeAreaProvider>
 }
