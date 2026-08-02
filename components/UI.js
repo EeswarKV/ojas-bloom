@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Modal } from "react-native";
-import { Leaf, Search, ChevronDown, ChevronUp, Calendar, Check } from "lucide-react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Animated, Modal, Alert } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Leaf, Search, ChevronDown, ChevronUp, Calendar, Check, User } from "lucide-react-native";
 import { COLORS, SPACING, RADIUS, SHADOW } from "../theme";
 import { initials, avatarColor, fmtDate } from "../lib/helpers";
 
