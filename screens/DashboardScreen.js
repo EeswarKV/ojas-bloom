@@ -129,7 +129,7 @@ export default function DashboardScreen({ onNavigate }) {
       </View>
 
       {/* Bottom section: 2-col on wide, 1-col on mobile */}
-      <View style={[{ marginTop: 14 }, isWide && { flexDirection: "row", gap: 14, alignItems: "flex-start" }]}>
+      <View style={[{ marginTop: 14 }, isWide && { flexDirection: "row", gap: 14, alignItems: "stretch" }]}>
         {/* Left: members tile */}
         <View style={isWide ? { flex: 1 } : {}}>
           <TouchableOpacity
