@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Modal, FlatList, TouchableOpacity, Linking, ActivityIndicator } from "react-native";
-import { Check, Copy, X, Bell, Leaf, TrendingUp } from "lucide-react-native";
+import { View, Text, ScrollView, StyleSheet, Modal, TouchableOpacity, Linking, ActivityIndicator, Platform } from "react-native";
+import { Copy, X, Bell, Leaf } from "lucide-react-native";
 import { useStudioData } from "../lib/StudioDataContext";
 import { COLORS, RADIUS, SHADOW } from "../theme";
 import { Card, CardHead, Button, Empty, KPI, Badge, useToast, Toast } from "../components/UI";
@@ -225,12 +225,14 @@ export default function DashboardScreen() {
 }
 
 function DrillModal({ visible, title, subtitle, onClose, data, renderItem }) {
+  const bottomPad = Platform.OS === "ios" ? 34 : 16;
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={s.modalOverlay}>
-        <View style={s.modalCard}>
+      <TouchableOpacity style={s.modalOverlay} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity activeOpacity={1} style={s.modalCard}>
+          <View style={s.modalHandle} />
           <View style={s.modalHead}>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={s.eyebrow}>{subtitle}</Text>
               <Text style={s.modalTitle}>{title}</Text>
             </View>
@@ -241,10 +243,18 @@ function DrillModal({ visible, title, subtitle, onClose, data, renderItem }) {
           {data.length === 0 ? (
             <Empty text="Nothing to show here yet." />
           ) : (
-            <FlatList data={data} keyExtractor={(item) => String(item.id)} renderItem={({ item }) => renderItem(item)} style={{ maxHeight: 420 }} />
+            <ScrollView
+              style={{ maxHeight: 420 }}
+              contentContainerStyle={{ paddingBottom: bottomPad }}
+              showsVerticalScrollIndicator={false}
+            >
+              {data.map((item) => (
+                <View key={String(item.id)}>{renderItem(item)}</View>
+              ))}
+            </ScrollView>
           )}
-        </View>
-      </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 }
@@ -259,10 +269,22 @@ const s = StyleSheet.create({
   amount: { fontSize: 13.5, fontWeight: "700" },
   iconBtn: { padding: 8, borderRadius: 8, borderWidth: 1, borderColor: COLORS.border },
   eyebrow: { fontSize: 11, textTransform: "uppercase", color: COLORS.muted, fontWeight: "600" },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(20,10,25,0.45)", justifyContent: "flex-end" },
-  modalCard: { backgroundColor: COLORS.surface, borderTopLeftRadius: 18, borderTopRightRadius: 18, maxHeight: "80%" },
-  modalHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  modalTitle: { fontSize: 16, fontWeight: "700", color: COLORS.brand, marginTop: 2 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(20,10,25,0.5)", justifyContent: "flex-end" },
+  modalCard: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    maxHeight: "85%",
+    ...SHADOW.md,
+  },
+  modalHandle: {
+    width: 40, height: 4, borderRadius: 2,
+    backgroundColor: COLORS.border,
+    alignSelf: "center",
+    marginTop: 10, marginBottom: 4,
+  },
+  modalHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", padding: 16, paddingTop: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  modalTitle: { fontSize: 17, fontWeight: "700", color: COLORS.brand, marginTop: 3 },
   greetCard: {
     flexDirection: "row",
     alignItems: "center",
