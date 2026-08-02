@@ -16,6 +16,8 @@
     "@react-navigation/native": "^7.1.8",
     "@supabase/supabase-js": "*",
     "expo": "54",
+    "expo-local-authentication": "~15.0.2",
+    "expo-local-authentication": "~15.0.2",
     "expo-sqlite": "*",
     "expo-status-bar": "~3.0.9",
     "graphql": "^16.9.0",

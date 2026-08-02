@@ -19,7 +19,8 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.ojasbloom.studio",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "Ojas Bloom Studio uses Face ID to securely unlock your studio data."
       }
     },
     "android": {

@@ -3,8 +3,9 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { View, Text, ActivityIndicator, useWindowDimensions, Platform, StyleSheet, ScrollView } from "react-native";
-import { LayoutDashboard, Users, Receipt, BarChart3, StickyNote } from "lucide-react-native";
+import { View, Text, ActivityIndicator, useWindowDimensions, Platform, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { LayoutDashboard, Users, Receipt, BarChart3, StickyNote, Fingerprint, Leaf } from "lucide-react-native";
+import * as LocalAuthentication from "expo-local-authentication";
 
 import { supabase } from "./lib/supabase";
 import { StudioDataProvider } from "./lib/StudioDataContext";
@@ -56,12 +57,21 @@ const TABS = [
 const WIDE_BREAKPOINT = 880;
 
 export default function App() {
-  const [session, setSession] = useState(undefined); // undefined = loading, null = signed out
+  const [session, setSession] = useState(undefined);
+  const [biometricLocked, setBiometricLocked] = useState(false);
   const { width } = useWindowDimensions();
   const isWideWeb = Platform.OS === "web" && width >= WIDE_BREAKPOINT;
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth.getSession().then(async ({ data }) => {
+      setSession(data.session);
+      // On native: if there's an existing session and biometrics are enrolled, lock
+      if (data.session && Platform.OS !== "web") {
+        const hasHW = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+        if (hasHW && enrolled) setBiometricLocked(true);
+      }
+    });
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -78,6 +88,16 @@ export default function App() {
     return <AuthScreen />;
   }
 
+  if (biometricLocked) {
+    return (
+      <BiometricLockScreen
+        email={session.user?.email}
+        onUnlock={() => setBiometricLocked(false)}
+        onSignOut={() => { supabase.auth.signOut(); setBiometricLocked(false); }}
+      />
+    );
+  }
+
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
@@ -89,6 +109,58 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
+// ---- Biometric lock screen ----
+function BiometricLockScreen({ email, onUnlock, onSignOut }) {
+  const [loading, setLoading] = useState(false);
+
+  const authenticate = async () => {
+    setLoading(true);
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: "Unlock Ojas Bloom Studio",
+        fallbackLabel: "Use Password",
+        disableDeviceFallback: false,
+      });
+      if (result.success) onUnlock();
+    } catch (_) {}
+    setLoading(false);
+  };
+
+  useEffect(() => { authenticate(); }, []);
+
+  return (
+    <View style={bio.wrap}>
+      <View style={bio.logoWrap}>
+        <Leaf size={34} color={COLORS.gold} />
+      </View>
+      <Text style={bio.title}>Ojas Bloom</Text>
+      <Text style={bio.subtitle}>Studio Manager</Text>
+      <Text style={bio.email}>{email}</Text>
+
+      <TouchableOpacity onPress={authenticate} style={bio.bioBtn} activeOpacity={0.7}>
+        {loading
+          ? <ActivityIndicator color="#fff" size="large" />
+          : <Fingerprint size={36} color="#fff" />}
+      </TouchableOpacity>
+      <Text style={bio.hint}>Tap to unlock with Face ID / Touch ID</Text>
+
+      <TouchableOpacity onPress={onSignOut} style={{ marginTop: 48 }}>
+        <Text style={{ fontSize: 13, color: "#5A4D6B" }}>Sign out</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const bio = StyleSheet.create({
+  wrap: { flex: 1, backgroundColor: COLORS.brand, alignItems: "center", justifyContent: "center", padding: 32 },
+  logoWrap: { width: 80, height: 80, borderRadius: 24, backgroundColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center", marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: "700", color: "#F6F2F8", letterSpacing: -0.4 },
+  subtitle: { fontSize: 13, color: "#8B7A98", marginTop: 4 },
+  email: { fontSize: 13, color: "#5A4D6B", marginTop: 12 },
+  bioBtn: { marginTop: 52, width: 80, height: 80, borderRadius: 40, backgroundColor: "rgba(255,255,255,0.14)", alignItems: "center", justifyContent: "center" },
+  hint: { fontSize: 12, color: "#5A4D6B", marginTop: 14, textAlign: "center" },
+});
 
 // ---- wide/web: clean sidebar + max-width content ----
 function WideLayout({ email }) {
