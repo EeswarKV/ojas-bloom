@@ -261,10 +261,6 @@ const s = StyleSheet.create({
 });
 
 
-  const monthIncome = (key) => payments.filter((p) => monthKeyOf(p.date) === key).reduce((a, b) => a + Number(b.amount), 0);
-  const monthExpense = (key) =>
-    expenses.filter((e) => isExpensePaid(e) && monthKeyOf(expensePaidDate(e)) === key).reduce((a, b) => a + Number(b.amount), 0);
-
   const currentFYStart = fyStartYear(todayISO());
   const currentFYKeys = fyMonthKeys(currentFYStart).filter((k) => k <= monthKeyOf(todayISO()));
   const previousFYStart = currentFYStart - 1;
