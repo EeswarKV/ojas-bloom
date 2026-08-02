@@ -131,7 +131,6 @@ const s = StyleSheet.create({
   bioBtnText: { fontSize: 14, fontWeight: "600", color: COLORS.brand },
 });
 
-export default function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
